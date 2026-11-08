@@ -3,6 +3,7 @@ import hashlib
 from time import time
 
 import skyron.config as cfg
+import skyron.proof
 from skyron.transaction import Transaction
 
 
@@ -93,6 +94,23 @@ class Block:
             'header': self.header.dump(),
             'transactions': [t.dump() for t in self.transactions]
         }
+
+    def verify(self, previous_block=None):
+        """Check this block's proof-of-work and, optionally, its chain link.
+
+        Educational point: a block's hash is a fingerprint of its header
+        (previous_hash, timestamp, difficulty) plus its transactions. If any
+        of those change after mining, the stored proof stops validating,
+        which is what makes the chain tamper-evident. Each block also stores
+        the hash of its predecessor, so comparing previous_hash with
+        previous_block.hash() proves this block sits on the exact expected
+        chain state.
+        """
+        if not skyron.proof.valid_proof(self):
+            return False
+        if previous_block is not None and self.previous_hash != previous_block.hash():
+            return False
+        return True
 
     @classmethod
     def init_from_json(cls, data):

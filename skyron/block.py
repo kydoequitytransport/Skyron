@@ -3,6 +3,7 @@ import hashlib
 from time import time
 
 import skyron.config as cfg
+import skyron.proof
 from skyron.transaction import Transaction
 
 
@@ -94,6 +95,20 @@ class Block:
             'transactions': [t.dump() for t in self.transactions]
         }
 
+    def verify(self, previous_block=None):
+        """Check this block's proof-of-work and, optionally, its chain link.
+
+        Proof-of-work uses the header hash, while hash() covers the full block.
+        Passing the previous block checks that previous_hash links to its full
+        block hash.
+        """
+        if not skyron.proof.valid_proof(self):
+            return False
+        if (previous_block is not None
+                and self.previous_hash != previous_block.hash()):
+            return False
+        return True
+
     @classmethod
     def init_from_json(cls, data):
         transactions = [Transaction.init_from_json(t)
@@ -106,4 +121,3 @@ class Block:
         self.header = header
 
         return self
-

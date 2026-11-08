@@ -98,17 +98,14 @@ class Block:
     def verify(self, previous_block=None):
         """Check this block's proof-of-work and, optionally, its chain link.
 
-        Educational point: a block's hash is a fingerprint of its header
-        (previous_hash, timestamp, difficulty) plus its transactions. If any
-        of those change after mining, the stored proof stops validating,
-        which is what makes the chain tamper-evident. Each block also stores
-        the hash of its predecessor, so comparing previous_hash with
-        previous_block.hash() proves this block sits on the exact expected
-        chain state.
+        Proof-of-work uses the header hash, while hash() covers the full block.
+        Passing the previous block checks that previous_hash links to its full
+        block hash.
         """
         if not skyron.proof.valid_proof(self):
             return False
-        if previous_block is not None and self.previous_hash != previous_block.hash():
+        if (previous_block is not None
+                and self.previous_hash != previous_block.hash()):
             return False
         return True
 
@@ -124,4 +121,3 @@ class Block:
         self.header = header
 
         return self
-
